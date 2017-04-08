@@ -1,19 +1,42 @@
 module FablePlaypen
 
 open Fable.Core
-open Fable.Core.JsInterop
 open Fable.Import
+open Elmish
 
-let init() =
-    let canvas = Browser.document.getElementsByTagName_canvas().[0]
-    canvas.width <- 1000.
-    canvas.height <- 800.
-    let ctx = canvas.getContext_2d()
-    // The (!^) operator checks and casts a value to an Erased Union type
-    // See http://fable.io/docs/interacting.html#Erase-attribute
-    ctx.fillStyle <- !^"rgb(200,0,0)"
-    ctx.fillRect (10., 10., 55., 50.)
-    ctx.fillStyle <- !^"rgba(0, 0, 200, 0.5)"
-    ctx.fillRect (30., 30., 55., 50.)
+// MODEL
 
-init()
+type Msg =
+  | Increment
+  | Decrement
+
+let init () = 0
+
+// UPDATE
+
+let update (msg:Msg) count =
+  match msg with
+  | Increment -> count + 1
+  | Decrement -> count - 1
+
+// rendering views with React
+open Fable.Core.JsInterop
+open Fable.Helpers.React.Props
+module R = Fable.Helpers.React
+
+let view count dispatch =
+  let onClick msg =
+    OnClick <| fun _ -> msg |> dispatch
+
+  R.div []
+    [ R.button [ onClick Decrement ] [ R.str "-" ]
+      R.div [] [ R.str (string count) ]
+      R.button [ onClick Increment ] [ R.str "+" ] ]
+
+open Elmish.React
+
+// App
+Program.mkSimple init update view
+|> Program.withConsoleTrace
+|> Program.withReact "elmish-app"
+|> Program.run
