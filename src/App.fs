@@ -10,14 +10,18 @@ type Msg =
   | Increment
   | Decrement
 
-let init () = 0
+let init () = (0, Cmd.none)
 
 // UPDATE
 
 let update (msg:Msg) count =
   match msg with
-  | Increment -> count + 1
-  | Decrement -> count - 1
+  | Increment -> (count + 1, Cmd.none)
+  | Decrement -> (count - 1, Cmd.none)
+
+// Subscriptions
+let subscriptions state =
+    Cmd.none
 
 // rendering views with React
 open Fable.Core.JsInterop
@@ -37,7 +41,8 @@ open Elmish.React
 open Elmish.Debug
 
 // App
-Program.mkSimple init update view
+Program.mkProgram init update view
+|> Program.withSubscription subscriptions
 |> Program.withConsoleTrace
 |> Program.withReact "elmish-app"
 |> Program.withDebugger
