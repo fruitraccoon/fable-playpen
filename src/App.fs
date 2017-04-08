@@ -5,19 +5,22 @@ open Fable.Import
 open Elmish
 
 // MODEL
+type State = {
+    count: int
+}
 
 type Msg =
   | Increment
   | Decrement
 
-let init () = (0, Cmd.none)
+let init () = ({ count = 0 }, Cmd.none)
 
 // UPDATE
-
-let update (msg:Msg) count =
+let update msg state =
+  let { count = currentCount } = state
   match msg with
-  | Increment -> (count + 1, Cmd.none)
-  | Decrement -> (count - 1, Cmd.none)
+  | Increment -> ({ state with count = currentCount + 1 }, Cmd.none)
+  | Decrement -> ({ state with count = currentCount - 1 }, Cmd.none)
 
 // Subscriptions
 let subscriptions state =
@@ -28,13 +31,13 @@ open Fable.Core.JsInterop
 open Fable.Helpers.React.Props
 module R = Fable.Helpers.React
 
-let view count dispatch =
+let view state dispatch =
   let onClick msg =
     OnClick <| fun _ -> msg |> dispatch
 
   R.div []
     [ R.button [ onClick Decrement ] [ R.str "-" ]
-      R.div [] [ R.str (string count) ]
+      R.div [] [ R.str (string state.count) ]
       R.button [ onClick Increment ] [ R.str "+" ] ]
 
 open Elmish.React
