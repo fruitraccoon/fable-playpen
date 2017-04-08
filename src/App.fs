@@ -7,20 +7,33 @@ open Elmish
 // MODEL
 type State = {
     count: int
+    asyncInProgress: bool
 }
 
 type Msg =
+  | AsyncIncrement
   | Increment
   | Decrement
 
-let init () = ({ count = 0 }, Cmd.none)
+let init () =
+    ({ count = 0; asyncInProgress = false }, Cmd.none)
 
 // UPDATE
+let delayedIncrement count =
+    async {
+        do! Async.Sleep (count * 1000)
+        return Increment
+    }
+
 let update msg state =
   let { count = currentCount } = state
   match msg with
-  | Increment -> ({ state with count = currentCount + 1 }, Cmd.none)
-  | Decrement -> ({ state with count = currentCount - 1 }, Cmd.none)
+  | AsyncIncrement ->
+    ({ state with asyncInProgress = true }, Cmd.ofAsync delayedIncrement currentCount id (fun _ -> Decrement))
+  | Increment ->
+    ({ state with count = currentCount + 1; asyncInProgress = false }, Cmd.none)
+  | Decrement ->
+    ({ state with count = currentCount - 1; asyncInProgress = false }, Cmd.none)
 
 // Subscriptions
 let subscriptions state =
@@ -36,9 +49,11 @@ let view state dispatch =
     OnClick <| fun _ -> msg |> dispatch
 
   R.div []
-    [ R.button [ onClick Decrement ] [ R.str "-" ]
+    [ R.button [ onClick Decrement; Disabled state.asyncInProgress ] [ R.str "-" ]
       R.div [] [ R.str (string state.count) ]
-      R.button [ onClick Increment ] [ R.str "+" ] ]
+      R.button [ onClick AsyncIncrement; Disabled state.asyncInProgress ] [ R.str "+" ]
+      R.div [] [ (R.str <| if state.asyncInProgress then "Please wait" else "") ]
+    ]
 
 open Elmish.React
 open Elmish.Debug
