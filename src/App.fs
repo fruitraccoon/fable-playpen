@@ -54,6 +54,15 @@ open Fable.Core.JsInterop
 open Fable.Helpers.React.Props
 module R = Fable.Helpers.React
 
+let progressStyles : ICSSProp list =
+    [
+        Position "fixed"
+        Top 0
+        Left 0
+        Right 0
+        TextAlign "center"
+    ]
+
 let view state dispatch =
     let onClick msg =
         OnClick <| fun _ -> msg |> dispatch
@@ -62,7 +71,7 @@ let view state dispatch =
         [ R.button [ onClick Decrement; Disabled state.asyncInProgress ] [ R.str "-" ]
           R.div [] [ R.str (string state.count) ]
           R.button [ onClick AsyncIncrement; Disabled state.asyncInProgress ] [ R.str "+" ]
-          R.div [] [ (R.str <| if state.asyncInProgress then "Please wait" else "") ]
+          R.div [ Style progressStyles ] [ (R.str <| if state.asyncInProgress then "Please wait ..." else "") ]
           R.div [] [ R.str (sprintf "Last Key: %s" (if state.lastKey.IsNone then "<none>" else state.lastKey.Value)) ]
         ]
 
